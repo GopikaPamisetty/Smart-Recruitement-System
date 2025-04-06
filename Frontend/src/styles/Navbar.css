@@ -1,0 +1,101 @@
+.navbar {
+    background-color: white;
+}
+
+.navbar-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1120px;
+    height: 64px;
+    margin: 0 auto;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.logo-highlight {
+    color: #F83002;
+}
+
+.nav-links-container {
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+}
+
+.nav-links {
+    display: flex;
+    font-weight: 500;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.auth-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-outline {
+    border: 1px solid #ccc;
+    background: transparent;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background-color: #6A38C2;
+    color: white;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+}
+
+.btn-primary:hover {
+    background-color: #5b30a6;
+}
+
+.avatar {
+    cursor: pointer;
+}
+
+.popover-content {
+    width: 20rem;
+}
+
+.popover-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-info {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.user-name {
+    font-weight: 500;
+    color:red
+}
+
+.user-bio {
+    font-size: 0.875rem;
+    color: gray;
+}
+
+.popover-actions {
+    display: flex;
+    flex-direction: column;
+    margin-top: 0.5rem;
+    color: gray;
+}
+
+.action-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
