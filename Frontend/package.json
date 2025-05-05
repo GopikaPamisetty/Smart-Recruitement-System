@@ -7,8 +7,11 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "serve": "vite preview"
   },
+  
+
   "dependencies": {
     "@heroicons/react": "^2.2.0",
     "@radix-ui/react-avatar": "^1.1.3",
