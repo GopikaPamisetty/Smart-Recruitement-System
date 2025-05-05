@@ -4,6 +4,9 @@ import jwt from "jsonwebtoken";
 import getDataUri from "../utils/datauri.js";
 import cloudinary from "../utils/cloudinary.js";
 
+//import { User } from "../models/userModel.js";
+import { Job } from "../models/jobModel.js";
+
 export const register = async (req, res) => {
     try {
         const { fullname, email, phoneNumber, password, role } = req.body;
@@ -127,91 +130,101 @@ export const logout = async (req, res) => {
         console.log(error);
     }
 }
-
 export const updateProfile = async (req, res) => {
     try {
-        const { fullname, email, phoneNumber, bio, skills } = req.body;
-
-        
-        // Multer will place the uploaded files in req.files
-        const profilePhoto = req.files?.profilePhoto?.[0]; // Get profile photo
-        const resume = req.files?.resume?.[0]; // Get resume
-
-        let profilePhotoUrl = '';
-        let resumeUrl = '';
-
-        if (profilePhoto) {
-            // Upload profile photo to cloudinary
-            
-            const profilePhotoUri = getDataUri(profilePhoto);
-            const profilePhotoUpload = await cloudinary.uploader.upload(profilePhotoUri.content);
-            profilePhotoUrl = profilePhotoUpload.secure_url;
-        }
-
-        if (resume) {
-            // Upload resume to cloudinary
-            const resumeUri = getDataUri(resume);
-            const resumeUpload = await cloudinary.uploader.upload(resumeUri.content);
-            resumeUrl = resumeUpload.secure_url;
-        }
-
-        // Process skills
-        let skillsArray;
-        if (skills) {
-            skillsArray = skills.split(",");
-        }
-
-        const userId = req.id; // middleware authenticationz
-        let user = await User.findById(userId);
-
-        if (!user) {
-            return res.status(400).json({
-                message: "User not found.",
-                success: false
-            });
-        }
-
-        // Update user fields
-        if (fullname) user.fullname = fullname;
-        if (email) user.email = email;
-        if (phoneNumber) user.phoneNumber = phoneNumber;
-        if (bio) user.profile.bio = bio;
-        if (skills) user.profile.skills = skillsArray;
-
-        // If profile photo is uploaded, update it
-        if (profilePhotoUrl) {
-            user.profile.profilePhoto = profilePhotoUrl;
-        }
-
-        // If resume is uploaded, update it
-        if (resumeUrl) {
-            user.profile.resume = resumeUrl;
-            user.profile.resumeOriginalName = resume.originalname
-        }
-
-        // Save updated user data
-        await user.save();
-
-        // Send the response back with updated user data
-        user = {
-            _id: user._id,
-            fullname: user.fullname,
-            email: user.email,
-            phoneNumber: user.phoneNumber,
-            role: user.role,
-            profile: user.profile
-        };
-
-        return res.status(200).json({
-            message: "Profile updated successfully.",
-            user,
-            success: true
+      const { fullname, email, phoneNumber, bio, skills, removeProfilePhoto } = req.body;
+  
+      // Uploaded files via multer
+      const profilePhoto = req?.files?.profilePhoto?.[0] || null;
+      const resume = req?.files?.resume?.[0] || null;
+  
+      let profilePhotoUrl = '';
+      let resumeUrl = '';
+  
+      // 📤 Upload new profile photo if provided
+      if (profilePhoto) {
+        const profilePhotoUri = getDataUri(profilePhoto);
+        const uploadRes = await cloudinary.uploader.upload(profilePhotoUri.content);
+        profilePhotoUrl = uploadRes.secure_url;
+      }
+  
+      // 📤 Upload new resume if provided
+      if (resume) {
+        const resumeUri = getDataUri(resume);
+        const uploadRes = await cloudinary.uploader.upload(resumeUri.content, {
+          resource_type: 'raw'
         });
+        resumeUrl = uploadRes.secure_url;
+      }
+  
+      // 🧠 Parse skills to array
+      const skillsArray = skills ? skills.split(',').map(s => s.trim()) : [];
+  
+      // 🔐 Get user
+      const userId = req.id;
+      let user = await User.findById(userId);
+  
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: "User not found."
+        });
+      }
+  
+      // 🔄 Update basic info
+      user.fullname = fullname || user.fullname;
+      user.email = email || user.email;
+      user.phoneNumber = phoneNumber || user.phoneNumber;
+  
+      // 🧠 Update profile fields for job seekers
+      if (user.role !== 'recruiter') {
+        user.profile.bio = bio || user.profile.bio;
+        if (skillsArray.length > 0) {
+          user.profile.skills = skillsArray;
+        }
+      }
+  
+      // 🖼️ Handle profile photo
+if (removeProfilePhoto === 'true') {
+  user.profile.profilePhoto = '';
+} else if (profilePhotoUrl) {
+  // Only set new photo if not removing
+  user.profile.profilePhoto = profilePhotoUrl;
+}
+
+  
+      // 📄 Handle resume
+      if (resumeUrl) {
+        user.profile.resume = resumeUrl;
+        user.profile.resumeOriginalName = resume.originalname || 'resume.pdf';
+      }
+  
+      // ✅ Save and respond
+      await user.save();
+  
+      return res.status(200).json({
+        success: true,
+        message: "Profile updated successfully.",
+        user: {
+          _id: user._id,
+          fullname: user.fullname,
+          email: user.email,
+          phoneNumber: user.phoneNumber,
+          role: user.role,
+          profile: user.profile
+        }
+      });
+  
     } catch (error) {
-        console.log(error);
-        return res.status(500).json({ message: "An error occurred.", success: false });
+      console.error("❌ Error in updateProfile:", error);
+      return res.status(500).json({
+        success: false,
+        message: "An error occurred while updating profile.",
+        error: error.message
+      });
     }
-};
+  };
+  
 
 export const getAppliedJobs = async (req, res) => {
     try {
@@ -228,4 +241,49 @@ export const getAppliedJobs = async (req, res) => {
         console.error("Error fetching applied jobs:", error);
         res.status(500).json({ error: "Internal server error" }); // ✅ Always return JSON
     }
+};
+
+
+
+
+
+export const toggleSaveJob = async (req, res) => {
+  try {
+    const userId = req.id;
+    const { jobId } = req.params;
+
+    const user = await User.findById(userId);
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const alreadySaved = user.savedJobs.includes(jobId);
+
+    if (alreadySaved) {
+      user.savedJobs = user.savedJobs.filter(id => id.toString() !== jobId);
+      await user.save();
+      return res.status(200).json({ message: "Job removed from saved jobs" });
+    } else {
+      user.savedJobs.push(jobId);
+      await user.save();
+      return res.status(200).json({ message: "Job saved successfully" });
+    }
+  } catch (err) {
+    console.error("Save job error:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const getSavedJobs = async (req, res) => {
+  try {
+    const userId = req.id;
+
+    const user = await User.findById(userId).populate("savedJobs");
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    return res.status(200).json({ savedJobs: user.savedJobs });
+  } catch (error) {
+    console.error("Error fetching saved jobs:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
 };

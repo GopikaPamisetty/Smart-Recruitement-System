@@ -32,6 +32,10 @@ const jobSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    startDate: { type: Date,
+        default: Date.now ,
+        required: true },
+    endDate: { type: Date, required: true },
     company: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Company',

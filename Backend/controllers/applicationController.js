@@ -1,53 +1,98 @@
 import { Application } from "../models/applicationModel.js";
 import { Job } from "../models/jobModel.js";
-
+import {User} from "../models/userModel.js";
 
 export const applyJob = async (req, res) => {
     try {
         const userId = req.id;
-        console.log("🔍 userId from req.id:", req.id);
-
         const jobId = req.params.id;
+
         if (!jobId) {
             return res.status(400).json({
-                message: "Job id is required.",
-                success: false
-            })
-        };
-        // check if the user has already applied for the job
-        const existingApplication = await Application.findOne({ job: jobId, applicant: userId });
-
-        if (existingApplication) {
-            return res.status(400).json({
-                message: "You have already applied for this jobs",
+                message: "Job ID is required.",
                 success: false
             });
         }
 
-        // check if the jobs exists
+        // 1️⃣ Check if job exists
         const job = await Job.findById(jobId);
         if (!job) {
             return res.status(404).json({
-                message: "Job not found",
+                message: "Job not found.",
                 success: false
-            })
+            });
         }
-        // create a new application
-        const newApplication = await Application.create({
-            job:jobId,
-            applicant:userId,
+
+        // 2️⃣ Check application window (startDate and endDate)
+        const currentDate = new Date();
+        if (currentDate < job.startDate) {
+            return res.status(400).json({
+                message: "Applications haven't opened yet.",
+                success: false
+            });
+        }
+        if (currentDate > job.endDate) {
+            return res.status(400).json({
+                message: "Application deadline has passed.",
+                success: false
+            });
+        }
+
+        // 3️⃣ Check if user already applied
+        const existingApplication = await Application.findOne({
+            job: jobId,
+            applicant: userId
         });
 
+        if (existingApplication) {
+            return res.status(400).json({
+                message: "You have already applied for this job.",
+                success: false
+            });
+        }
+
+        // 4️⃣ Check if resume exists for user
+        const user = await User.findById(userId);
+        if (!user?.profile?.resume) {
+            return res.status(400).json({
+                message: "Please upload your resume before applying for jobs.",
+                success: false
+            });
+        }
+
+        // 5️⃣ Check position availability
+        if (job.position <= 0) {
+            return res.status(400).json({
+                message: "No positions available for this job.",
+                success: false
+            });
+        }
+
+        // 6️⃣ Create new application
+        const newApplication = await Application.create({
+            job: jobId,
+            applicant: userId
+        });
+
+        // 7️⃣ Update job: push application + decrement position
         job.applications.push(newApplication._id);
+        job.position = job.position - 1;
         await job.save();
+
         return res.status(201).json({
-            message:"Job applied successfully.",
-            success:true
-        })
+            message: "Job applied successfully.",
+            success: true
+        });
+
     } catch (error) {
-        console.log(error);
+        console.error("Error applying to job:", error);
+        return res.status(500).json({
+            message: "Internal server error.",
+            success: false
+        });
     }
 };
+
 export const getAppliedJobs = async (req,res) => {
     try {
         const userId = req.id;

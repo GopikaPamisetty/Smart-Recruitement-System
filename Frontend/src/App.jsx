@@ -6,6 +6,7 @@ import Home from './components/Home'
 import Jobs from './components/Jobs'
 import Browse from './components/Browse'
 import Profile from './components/Profile'
+import SavedJobs from './components/SavedJobs'
 import JobDescription from './components/JobDescription'
 import Companies from './components/admin/Companies'
 import CompanyCreate from './components/admin/CompanyCreate'
@@ -16,7 +17,11 @@ import Applicants from './components/admin/Applicants'
 import ProtectedRoute from './components/admin/ProtectedRoute'
 import ResumeBuilder from "./components/ResumeBuilder"
 import EditPostJob from "./components/admin/EditPostJob"
-
+import Dashboard from "./components/interview/Dashboard";
+import NotFound from "./components/interview/NotFound";
+import CreateMockInterview from "./components/interview/CreateMockInterview";
+import MockInterview from "./components/interview/MockInterview";
+import Feedback from "./components/interview/Feedback";
 const appRouter = createBrowserRouter([
   {
     path: '/',
@@ -50,6 +55,10 @@ const appRouter = createBrowserRouter([
     path: "/profile",
     element: <Profile />
   },
+  {
+    path: "/saved-jobs",
+    element: <SavedJobs />
+  },
   // admin ke liye yha se start hoga
   {
     path:"/admin/companies",
@@ -79,8 +88,31 @@ const appRouter = createBrowserRouter([
     path:"/admin/edit-job/:jobId",
     element: <ProtectedRoute><EditPostJob/></ProtectedRoute>,
     errorElement: <div>Something went wrong. Please try again.</div>
-  }
+  },
+  {
+    path: "/dashboard",
+    element: <Dashboard />
+  },
+  {
+    path: "/notFound",
+    element: <NotFound />
+  },
   
+  {
+    path: "/create-mock-interview",
+    element: <CreateMockInterview />
+  },
+  {
+    path: "/mock-interview/:id",
+    element: <MockInterview />
+  },
+  {
+    path: "/feedback/:id",
+    element: <Feedback />
+  },
+ 
+
+
 
 ])
 function App() {

@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom'
 import useGetAllCompanies from '@/hooks/useGetAllCompanies'
 import { useDispatch } from 'react-redux'
 import { setSearchCompanyByText } from '@/redux/companySlice'
-
+import AdminFooter from '../shared/AdminFooter'
 const Companies = () => {
     useGetAllCompanies();
     const [input, setInput] = useState("");
@@ -18,6 +18,8 @@ const Companies = () => {
         dispatch(setSearchCompanyByText(input));
     },[input]);
     return (
+        <>
+        
         <div>
             <Navbar />
             <div className='max-w-6xl mx-auto my-10'>
@@ -32,6 +34,8 @@ const Companies = () => {
                 <CompaniesTable/>
             </div>
         </div>
+        <AdminFooter />
+        </>
     )
 }
 

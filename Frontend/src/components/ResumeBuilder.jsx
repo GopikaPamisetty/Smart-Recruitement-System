@@ -1,21 +1,25 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { jsPDF } from "jspdf";
+import Navbar from './shared/Navbar';
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 const ResumeBuilder = () => {
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    address: "",
-    linkedin: "",
-    profile: "",
-    education: "",
-    skills: "",
-    projects: "",
-    certifications: "",
-    softSkills: "",
-    hobbies: "",
+    name: "", email: "", phone: "", address: "", linkedin: "",
+    profile: "", education: "", skills: "", projects: "",
+    certifications: "", softSkills: "", hobbies: "",
   });
+
+  const { user } = useSelector(store => store.auth);
+  const navigate = useNavigate();
+
+  // 🔐 Redirect to login if not authenticated
+  useEffect(() => {
+    if (!user) {
+      navigate("/login");
+    }
+  }, [user, navigate]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -32,15 +36,16 @@ const ResumeBuilder = () => {
     const checkPageBreak = (extraSpace) => {
       if (y + extraSpace > pageHeight - 20) {
         doc.addPage();
-        y = 20;
+        y = 5;
       }
     };
 
     const addTitle = (title) => {
+      y -= 5;
       checkPageBreak(lineHeight * 2);
       doc.setLineWidth(0.5);
       doc.line(marginLeft, y, pageWidth - marginLeft, y);
-      y += 5;
+      y += 10;
       doc.setFont("helvetica", "bold");
       doc.setFontSize(14);
       doc.text(title, marginLeft, y);
@@ -60,7 +65,6 @@ const ResumeBuilder = () => {
       checkPageBreak(lineHeight * 2);
       doc.setFont("helvetica", "normal");
       doc.setFontSize(12);
-
       const items = text.split(/\n| {3,}/).map((item) => item.trim()).filter(Boolean);
 
       if (text.includes("\n")) {
@@ -79,7 +83,6 @@ const ResumeBuilder = () => {
           checkPageBreak(lineHeight);
           doc.text(`• ${item}`, x, y);
           y += lineHeight;
-
           if ((index + 1) % Math.ceil(items.length / columns) === 0) {
             x += columnWidth;
             y = yStart;
@@ -129,37 +132,39 @@ const ResumeBuilder = () => {
   };
 
   return (
-    <div className="p-4 md:p-6 min-h-screen bg-gray-100">
-      <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center">Resume Builder</h2>
-      <div className="bg-white p-4 md:p-6 rounded-lg shadow-lg max-w-3xl mx-auto">
-        <h3 className="text-lg md:text-xl font-semibold mb-4">Edit Your Details</h3>
-        <form className="space-y-4">
-          {Object.keys(formData).map((key) => (
-            <div key={key}>
-              <label className="block text-gray-700 capitalize mb-1">{key}</label>
-              <textarea
-                name={key}
-                value={formData[key]}
-                onChange={handleChange}
-                placeholder={getPlaceholder(key)}
-                rows={key === "profile" ? 4 : 3}
-                className="w-full p-2 border rounded-lg resize-none text-sm md:text-base"
-              />
-            </div>
-          ))}
-        </form>
-        <button
-          onClick={generatePDF}
-          className="mt-6 bg-blue-500 text-white px-6 py-2 rounded-lg shadow-md hover:bg-blue-700 transition-all"
-        >
-          Download as PDF
-        </button>
+    <>
+      <Navbar />
+      <div className="p-4 md:p-6 min-h-screen bg-gray-100">
+        <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center">Resume Builder</h2>
+        <div className="bg-white p-4 md:p-6 rounded-lg shadow-lg max-w-3xl mx-auto">
+          <h3 className="text-lg md:text-xl font-semibold mb-4">Edit Your Details</h3>
+          <form className="space-y-4">
+            {Object.keys(formData).map((key) => (
+              <div key={key}>
+                <label className="block text-gray-700 capitalize mb-1">{key}</label>
+                <textarea
+                  name={key}
+                  value={formData[key]}
+                  onChange={handleChange}
+                  placeholder={getPlaceholder(key)}
+                  rows={key === "profile" ? 4 : 3}
+                  className="w-full p-2 border rounded-lg resize-none text-sm md:text-base"
+                />
+              </div>
+            ))}
+          </form>
+          <button
+            onClick={generatePDF}
+            className="mt-6 bg-blue-500 text-white px-6 py-2 rounded-lg shadow-md hover:bg-blue-700 transition-all"
+          >
+            Download as PDF
+          </button>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
-// Function to return placeholders based on field name
 const getPlaceholder = (key) => {
   const placeholders = {
     name: "Enter your full name",

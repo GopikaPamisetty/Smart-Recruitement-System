@@ -11,6 +11,7 @@ router.route("/getadminjobs").get(isAuthenticated, getAdminJobs);
 router.route("/get/:id").get(isAuthenticated, getJobById);
 router.route("/update/:id").put(isAuthenticated,updateJob);  // 🔹 Add this line
 router.delete("/:id", deleteJob)
+
 export default router;
 
 

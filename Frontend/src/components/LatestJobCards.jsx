@@ -5,6 +5,10 @@ import { useNavigate } from 'react-router-dom'
 const LatestJobCards = ({ job }) => {
     const navigate = useNavigate()
 
+    const daysLeft = job?.endDate
+        ? Math.ceil((new Date(job.endDate) - new Date()) / (1000 * 60 * 60 * 24))
+        : null;
+
     return (
         <div
             onClick={() => navigate(`/description/${job._id}`)}
@@ -30,6 +34,11 @@ const LatestJobCards = ({ job }) => {
                 <Badge className='text-[#7209b7] font-semibold' variant="ghost">
                     {job?.salary} LPA
                 </Badge>
+                {daysLeft !== null && (
+                    <Badge className='text-green-600 font-semibold' variant="ghost">
+                        {daysLeft > 0 ? `${daysLeft} days left` : "Application closed"}
+                    </Badge>
+                )}
             </div>
         </div>
     )

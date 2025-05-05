@@ -6,13 +6,14 @@ import { Button } from './ui/button';
 import { Contact, Mail, Pen, Trash } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { Label } from './ui/label';
-import UpdateProfileDialog from './UpdateProfileDialog';
+//import UpdateProfileDialog from './UpdateProfileDialog';
 import useGetAppliedJobs from '@/hooks/useGetAppliedJobs';
 import { APPLICATION_API_END_POINT } from '@/utils/constant';
 import axios from 'axios';
 import { toast } from 'sonner';
 import { setAllAppliedJobs } from '@/redux/jobSlice';
 import { Progress } from './ui/progress';
+import UpdateProfileDialog from "@/components/UpdateProfileDialog";
 
 const Profile = () => {
     const [open, setOpen] = useState(false);

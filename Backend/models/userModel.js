@@ -23,6 +23,7 @@ const userSchema = new mongoose.Schema({
         enum:['student','recruiter'],
         required:true
     },
+    
     profile:{
         bio:{type:String},
         skills:[{type:String}],
@@ -34,6 +35,12 @@ const userSchema = new mongoose.Schema({
             default:""
         }
     },
-},{timestamps:true});
+    savedJobs: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Job"
+      }]
+    }, { timestamps: true });
+    
+
 export const User = mongoose.model('User', userSchema);
 

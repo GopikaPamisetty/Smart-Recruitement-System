@@ -22,18 +22,7 @@ const Footer = () => {
           </p>
         </div>
 
-        {/* For Job Seekers */}
-        <div>
-          <h3 className="text-xl font-semibold text-white mb-4">Job Seekers</h3>
-          <ul className="space-y-2 text-sm">
-            <li><a href="/jobs" className="hover:text-white">Browse Jobs</a></li>
-            <li><a href="/saved-jobs" className="hover:text-white">Saved Jobs</a></li>
-            <li><a href="/profile" className="hover:text-white">My Profile</a></li>
-            <li><a href="/resumeBuilder" className="hover:text-white">Resume Builder</a></li>
-            <li><a href="/profile" className="hover:text-white">Application Status</a></li>
-          </ul>
-        </div>
-
+        
         {/* For Employers */}
         <div>
           <h3 className="text-xl font-semibold text-white mb-4">Recruiters</h3>

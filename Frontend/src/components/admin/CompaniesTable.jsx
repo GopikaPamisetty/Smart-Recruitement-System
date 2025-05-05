@@ -25,8 +25,9 @@ const CompaniesTable = () => {
         if (!confirmDelete) return;
 
         try {
-           
-            await axios.delete(`/api/company/${id}`);
+            axios.delete(`/api/v1/company/${id}`);
+
+            //await axios.delete(`/api/company/${id}`);
 
             setFilterCompany(prev => prev.filter(company => company._id !== id));
             console.log("Company deleted successfully.");

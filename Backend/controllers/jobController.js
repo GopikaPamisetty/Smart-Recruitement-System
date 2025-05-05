@@ -1,16 +1,27 @@
 import { Job } from "../models/jobModel.js";
 import { User } from "../models/userModel.js";
 import sendEmail from "../utils/sendEmail.js"; // make sure this utility exists
-
-// admin post krega job
 export const postJob = async (req, res) => {
     try {
-        const { title, description, requirements, salary, location, jobType, experience, position, companyId } = req.body;
+        const { 
+            title, 
+            description, 
+            requirements, 
+            salary, 
+            location, 
+            jobType, 
+            experience, 
+            position, 
+            companyId,
+            startDate,
+            endDate
+        } = req.body;
+
         const userId = req.id;
 
-        if (!title || !description || !requirements || !salary || !location || !jobType || !experience || !position || !companyId) {
+        if (!title || !description || !requirements || !salary || !location || !jobType || !experience || !position || !companyId || !startDate || !endDate) {
             return res.status(400).json({
-                message: "Something is missing.",
+                message: "All fields including start and end date are required.",
                 success: false
             });
         }
@@ -26,35 +37,27 @@ export const postJob = async (req, res) => {
             jobType,
             experienceLevel: experience,
             position,
+            startDate: new Date(startDate),
+            endDate: new Date(endDate),
             company: companyId,
             created_by: userId
         });
 
         // ✅ Send email notifications to all users
-        const users = await User.find({}, "email"); // fetch all emails only
+        const users = await User.find({}, "email");
 
-        // You could also batch or throttle if users.length is large
-        try {
-            const users = await User.find({}, "email");
-          
-            for (let user of users) {
-              try {
+        for (let user of users) {
+            try {
                 await sendEmail({
-                  email: user.email,
-                  subject: `🚀 New Job Posted: ${job.title}`,
-                  message: `Hey there!\n\nA new job titled "${job.title}" has just been posted on Job Hunt.\n\nCheck it out and apply now!`
+                    email: user.email,
+                    subject: `🚀 New Job Posted: ${job.title}`,
+                    message: `Hey there!\n\nA new job titled "${job.title}" has just been posted on Job Hunt.\n\nCheck it out and apply now!`
                 });
-          
-                // Optional delay between emails to avoid overwhelming the SMTP server
                 await new Promise(resolve => setTimeout(resolve, 300));
-              } catch (emailError) {
+            } catch (emailError) {
                 console.error(`Failed to send to ${user.email}:`, emailError.message);
-              }
             }
-          } catch (err) {
-            console.error("User fetching or email sending failed:", err);
-          }
-          
+        }
 
         return res.status(201).json({
             message: "New job created successfully and emails sent.",
@@ -70,6 +73,7 @@ export const postJob = async (req, res) => {
         });
     }
 };
+
 // student k liye
 export const getAllJobs = async (req, res) => {
     try {
@@ -149,10 +153,21 @@ const jobs = allJobs.filter(job => job.company && !job.company.isDeleted);
         console.log(error);
     }
 }
-
 export const updateJob = async (req, res) => {
     try {
-        const { title, description, requirements, salary, location, jobType, experience, position } = req.body;
+        const {
+            title,
+            description,
+            requirements,
+            salary,
+            location,
+            jobType,
+            experience,
+            position,
+            startDate,
+            endDate
+        } = req.body;
+
         const jobId = req.params.id;
 
         const updatedJob = await Job.findByIdAndUpdate(
@@ -161,16 +176,17 @@ export const updateJob = async (req, res) => {
                 title,
                 description,
                 requirements: Array.isArray(requirements)
-  ? requirements
-  : requirements.split(",").map((r) => r.trim()),
- // Ensure it's stored as an array
+                    ? requirements
+                    : requirements.split(",").map((r) => r.trim()),
                 salary: Number(salary),
                 location,
                 jobType,
                 experienceLevel: experience,
-                position
+                position,
+                startDate: startDate ? new Date(startDate) : undefined,
+                endDate: endDate ? new Date(endDate) : undefined
             },
-            { new: true } // Return the updated job
+            { new: true }
         );
 
         if (!updatedJob) {
@@ -187,15 +203,13 @@ export const updateJob = async (req, res) => {
         });
 
     } catch (error) {
-        console.log(error);
+        console.log("Error updating job:", error);
         return res.status(500).json({
             message: "Something went wrong.",
             success: false
         });
     }
 };
-
-
 
 export const deleteJob = async (req, res) => {
     try {
@@ -211,4 +225,6 @@ export const deleteJob = async (req, res) => {
       res.status(500).json({ message: "Server error" });
     }
   }
+  
+
   

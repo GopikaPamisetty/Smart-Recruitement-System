@@ -10,8 +10,6 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
 const EditPostJob = () => {
-    
-    
     const [input, setInput] = useState({
         title: "",
         description: "",
@@ -20,14 +18,14 @@ const EditPostJob = () => {
         location: "",
         jobType: "",
         experience: "",
-        position: 0
+        position: 0,
+        startDate: "",
+        endDate: ""
     });
+
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-
-    // Fetch job details
-
-    const { jobId } = useParams();  // ✅ Get jobId from URL
+    const { jobId } = useParams();
 
     useEffect(() => {
         const fetchJob = async () => {
@@ -35,7 +33,13 @@ const EditPostJob = () => {
                 const res = await axios.get(`${JOB_API_END_POINT}/get/${jobId}`, {
                     withCredentials: true
                 });
-                setInput(res.data.job);
+
+                const job = res.data.job;
+                setInput({
+                    ...job,
+                    startDate: job.startDate ? job.startDate.split("T")[0] : "",
+                    endDate: job.endDate ? job.endDate.split("T")[0] : ""
+                });
             } catch (error) {
                 console.error("Error fetching job:", error);
                 toast.error(error.response?.data?.message || "Failed to fetch job.");
@@ -47,21 +51,22 @@ const EditPostJob = () => {
         }
     }, [jobId]);
 
-    
-    
     const changeEventHandler = (e) => {
-        setInput({ ...input, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        setInput(prev => ({
+            ...prev,
+            [name]: value
+        }));
     };
 
     const submitHandler = async (e) => {
         e.preventDefault();
-    
-        // Simple check for required fields
-        if (!input.title || !input.description || !input.location) {
+
+        if (!input.title || !input.description || !input.location || !input.endDate) {
             toast.error("Please fill in all required fields");
             return;
         }
-    
+
         try {
             setLoading(true);
             const res = await axios.put(`${JOB_API_END_POINT}/update/${jobId}`, input, {
@@ -80,8 +85,6 @@ const EditPostJob = () => {
             setLoading(false);
         }
     };
-    
-    
 
     return (
         <div>
@@ -113,22 +116,6 @@ const EditPostJob = () => {
                             <Label>Job Type</Label>
                             <Input type="text" name="jobType" value={input.jobType} onChange={changeEventHandler} />
                         </div>
-                        {/* <div>
-                        <Label>Job Type</Label>
-                        <select
-                            name="jobType"
-                            value={input.jobType}
-                            onChange={changeEventHandler}
-                            className="w-full px-3 py-2 border rounded"
-                        >
-                            <option value="">Select job type</option>
-                            <option value="Full-Time">Full-Time</option>
-                            <option value="Part-Time">Part-Time</option>
-                            <option value="Internship">Internship</option>
-                            <option value="Contract">Contract</option>
-                        </select>
-                    </div> */}
-
                         <div>
                             <Label>Experience Level</Label>
                             <Input type="text" name="experience" value={input.experience} onChange={changeEventHandler} />
@@ -137,9 +124,17 @@ const EditPostJob = () => {
                             <Label>No of Positions</Label>
                             <Input type="number" name="position" value={input.position} onChange={changeEventHandler} />
                         </div>
+                        <div>
+                            <Label>Start Date</Label>
+                            <Input type="date" name="startDate" value={input.startDate} readOnly />
+                        </div>
+                        <div>
+                            <Label>End Date</Label>
+                            <Input type="date" name="endDate" value={input.endDate} onChange={changeEventHandler} required />
+                        </div>
                     </div>
                     {loading ? (
-                        <Button className="w-full my-4">
+                        <Button className="w-full my-4" disabled>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait
                         </Button>
                     ) : (
