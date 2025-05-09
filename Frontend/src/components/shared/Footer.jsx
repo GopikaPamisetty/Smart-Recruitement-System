@@ -10,6 +10,14 @@ import {
 } from "react-icons/fa";
 
 const Footer = () => {
+  const handleAdminLinkClick = (e, url) => {
+    if (!user || user.role !== "admin") {
+      e.preventDefault();
+      toast.error("Access Denied: Admins Only");
+    } else {
+      window.location.href = url; // navigate manually
+    }
+  };
   return (
     <footer className="bg-gray-900 text-gray-300 px-6 py-12 md:px-24">
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-12">
@@ -34,17 +42,7 @@ const Footer = () => {
           </ul>
         </div>
 
-        {/* For Employers */}
-        <div>
-          <h3 className="text-xl font-semibold text-white mb-4">Recruiters</h3>
-          <ul className="space-y-2 text-sm">
-            <li><a href="/admin/jobs/create" className="hover:text-white">Post a Job</a></li>
-            <li><a href="/admin/companies" className="hover:text-white">Company Dashboard</a></li>
-            <li><a href="/admin/companies/create" className="hover:text-white">New company</a></li>
-            <li><a href="/profile" className="hover:text-white">profile</a></li>
-            
-          </ul>
-        </div>
+       
 
         {/* Contact Info */}
         <div>
