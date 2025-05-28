@@ -34,8 +34,10 @@ app.use(helmet());
 
 // Allow both localhost and deployed frontend
 const allowedOrigins = [
-  "http://localhost:5173",
-  "https://smart-recruitement-system-live.onrender.com"
+    "https://smart-recruitement-system-live.onrender.com",
+    
+  "http://localhost:5173"
+  
 ];
 
 app.use(cors({
