@@ -36,7 +36,6 @@ app.use(helmet());
 const allowedOrigins = [
     "https://smart-recruitement-system-live.onrender.com",
     
-  "http://localhost:5173"
   
 ];
 
