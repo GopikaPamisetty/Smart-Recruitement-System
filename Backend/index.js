@@ -30,10 +30,29 @@ app.use(helmet());
 //     origin: process.env.CORS_ORIGIN || 'https://smart-recruitement-system-live.onrender.com',
 //     credentials: true
 // }));
+
+
+// Allow both localhost and deployed frontend
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://smart-recruitement-system-live.onrender.com"
+];
+
 app.use(cors({
-    origin: "https://smart-recruitement-system-live.onrender.com",
-    credentials: true
-  }));
+  origin: function (origin, callback) {
+    // allow requests with no origin like mobile apps or curl
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true // if you use cookies, sessions, etc.
+}));
+
+// your routes go here
+
   
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
