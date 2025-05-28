@@ -27,31 +27,27 @@
 
 
 // src/hooks/useGetAllJobs.js
-import { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import axios from 'axios';
-import { JOB_API_END_POINT } from '@/utils/constant';
-import { setAllJobs } from '@/redux/jobSlice';
+// src/hooks/useGetAllJobs.js
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import axios from "axios";
+import { JOB_API_END_POINT } from "@/utils/constant";
+import { setAllJobs } from "@/redux/jobSlice";
 
 export default function useGetAllJobs() {
   const dispatch = useDispatch();
-  const { searchedQuery } = useSelector(state => state.job);
+  const { searchedQuery } = useSelector((s) => s.job);
 
   useEffect(() => {
-    async function fetchAllJobs() {
-      try {
-        const res = await axios.get(
-          `${JOB_API_END_POINT}/get?keyword=${encodeURIComponent(searchedQuery)}`,
-          { withCredentials: true }
-        );
+    axios
+      .get(`${JOB_API_END_POINT}/get?keyword=${encodeURIComponent(searchedQuery)}`)
+      .then((res) => {
         if (res.data.success) {
           dispatch(setAllJobs(res.data.jobs));
         }
-      } catch (err) {
-        console.error('Failed to fetch jobs', err);
-      }
-    }
-
-    fetchAllJobs();
-  }, [dispatch, searchedQuery]);   // ← add searchedQuery here
+      })
+      .catch((err) => {
+        console.error("Failed to fetch jobs", err);
+      });
+  }, [dispatch, searchedQuery]);
 }
