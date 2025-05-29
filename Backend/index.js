@@ -34,7 +34,7 @@ app.use(cors({
   },
   credentials: true
 }));
-const allowedOrigins = process.env.CORS_ORIGINS.split(",");
+const allowedOrigins = (process.env.CORS_ORIGINS || "").split(",").filter(Boolean);
 
 console.log("✅ Allowed CORS Origins:", FRONTEND_ORIGINS);
 
