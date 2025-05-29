@@ -12,13 +12,33 @@ import userRoute from "./routes/userRoute.js";
 import companyRoute from "./routes/companyRoute.js";
 import jobRoute from "./routes/jobRoute.js";
 import applicationRoute from "./routes/applicationRoute.js";
-
+// App init
+const app = express();
 
 // Load env
 dotenv.config();
+// just after dotenv.config()
+const FRONTEND_ORIGINS = (process.env.CORS_ORIGINS || "")
+  .split(",")
+  .map(origin => origin.trim())
+  .filter(Boolean);
 
-// App init
-const app = express();
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true); // allow server-to-server or curl
+    if (FRONTEND_ORIGINS.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error(`CORS policy does not allow access from ${origin}`));
+    }
+  },
+  credentials: true
+}));
+const allowedOrigins = process.env.CORS_ORIGINS.split(",");
+
+console.log("✅ Allowed CORS Origins:", FRONTEND_ORIGINS);
+
+
 const PORT = process.env.PORT || 8000;
 
 // DB connect
@@ -33,11 +53,6 @@ app.use(helmet());
 
 
 // Allow both localhost and deployed frontend
-const allowedOrigins = [
-    "https://smart-recruitement-system-live.onrender.com",
-    
-  
-];
 
 app.use(cors({
   origin: function (origin, callback) {
@@ -53,6 +68,7 @@ app.use(cors({
 }));
 
 // your routes go here
+console.log("✅ Allowed CORS Origins:", FRONTEND_ORIGINS);
 
   
 app.use(express.json());

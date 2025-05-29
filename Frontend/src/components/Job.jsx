@@ -27,7 +27,7 @@ const Job = ({ job }) => {
 
     const toggleSave = async () => {
         if (!user) {
-            toast.warning("Please log in to save jobs.");
+            toast.warning("Please log in to save jobs.")
             navigate("/login"); // 🔁 Redirect to login if not authenticated
             return;
         }

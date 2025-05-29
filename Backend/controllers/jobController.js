@@ -88,7 +88,9 @@ export const getAllJobs = async (req, res) => {
         const allJobs = await Job.find(query).populate("company").sort({ createdAt: -1 });
 
 // Filter jobs whose company is not deleted
-const jobs = allJobs.filter(job => job.company && !job.company.isDeleted);
+// const jobs = allJobs.filter(job => job.company && !job.company.isDeleted);
+const jobs = allJobs.filter(job => job.company && job.company.isDeleted === false);
+
 
         if (!jobs) {
             return res.status(404).json({
@@ -101,9 +103,15 @@ const jobs = allJobs.filter(job => job.company && !job.company.isDeleted);
             success: true
         })
     } catch (error) {
-        console.log(error);
+        console.error("Error in getAllJobs:", error);
+        res.status(500).json({
+            message: "Server error",
+            success: false
+        });
     }
-}
+    
+    }
+
 // student
 export const getJobById = async (req, res) => {
     try {
