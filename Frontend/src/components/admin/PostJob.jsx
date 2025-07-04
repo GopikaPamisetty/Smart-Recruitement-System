@@ -68,7 +68,7 @@ const PostJob = () => {
     
             if (res.data.success) {
                 toast.success(res.data.message);
-                navigate("/admin/jobs");
+                navigate("/recruiter/jobs");
             }
         } catch (error) {
             console.error("❌ Post job error:", error);

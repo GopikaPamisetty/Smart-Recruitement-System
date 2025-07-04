@@ -4,21 +4,37 @@ import sendEmail from "../utils/sendEmail.js"; // make sure this utility exists
 export const postJob = async (req, res) => {
     try {
         const { 
-            title, 
-            description, 
-            requirements, 
-            salary, 
-            location, 
-            jobType, 
-            experience, 
-            position, 
-            companyId,
-            startDate,
-            endDate
+            title, description, requirements, salary, location, 
+            jobType, experience, position, companyId, startDate, endDate
         } = req.body;
 
         const userId = req.id;
 
+        // ✅ Fetch user and validate
+        const user = await User.findById(userId);
+
+        if (!user || user.role !== 'recruiter') {
+            return res.status(403).json({
+                success: false,
+                message: "Only recruiters can post jobs.",
+            });
+        }
+
+        if (user.isBlocked) {
+            return res.status(403).json({
+                success: false,
+                message: "Your account is blocked by admin.",
+            });
+        }
+
+        if (!user.profile?.isApproved) {
+            return res.status(403).json({
+                success: false,
+                message: "You are not approved yet. Wait for admin approval.",
+            });
+        }
+
+        // ✅ Validate required fields
         if (!title || !description || !requirements || !salary || !location || !jobType || !experience || !position || !companyId || !startDate || !endDate) {
             return res.status(400).json({
                 message: "All fields including start and end date are required.",
@@ -43,7 +59,7 @@ export const postJob = async (req, res) => {
             created_by: userId
         });
 
-        // ✅ Send email notifications to all users
+        // ✅ Notify all users via email
         const users = await User.find({}, "email");
 
         for (let user of users) {
@@ -53,7 +69,7 @@ export const postJob = async (req, res) => {
                     subject: `🚀 New Job Posted: ${job.title}`,
                     message: `Hey there!\n\nA new job titled "${job.title}" has just been posted on Job Hunt.\n\nCheck it out and apply now!`
                 });
-                await new Promise(resolve => setTimeout(resolve, 300));
+                await new Promise(resolve => setTimeout(resolve, 300)); // Delay to avoid rate limiting
             } catch (emailError) {
                 console.error(`Failed to send to ${user.email}:`, emailError.message);
             }
@@ -73,6 +89,79 @@ export const postJob = async (req, res) => {
         });
     }
 };
+
+// export const postJob = async (req, res) => {
+//     try {
+//         const { 
+//             title, 
+//             description, 
+//             requirements, 
+//             salary, 
+//             location, 
+//             jobType, 
+//             experience, 
+//             position, 
+//             companyId,
+//             startDate,
+//             endDate
+//         } = req.body;
+
+//         const userId = req.id;
+
+//         if (!title || !description || !requirements || !salary || !location || !jobType || !experience || !position || !companyId || !startDate || !endDate) {
+//             return res.status(400).json({
+//                 message: "All fields including start and end date are required.",
+//                 success: false
+//             });
+//         }
+
+//         const job = await Job.create({
+//             title,
+//             description,
+//             requirements: Array.isArray(requirements)
+//                 ? requirements
+//                 : requirements.split(",").map((r) => r.trim()),
+//             salary: Number(salary),
+//             location,
+//             jobType,
+//             experienceLevel: experience,
+//             position,
+//             startDate: new Date(startDate),
+//             endDate: new Date(endDate),
+//             company: companyId,
+//             created_by: userId
+//         });
+
+//         // ✅ Send email notifications to all users
+//         const users = await User.find({}, "email");
+
+//         for (let user of users) {
+//             try {
+//                 await sendEmail({
+//                     email: user.email,
+//                     subject: `🚀 New Job Posted: ${job.title}`,
+//                     message: `Hey there!\n\nA new job titled "${job.title}" has just been posted on Job Hunt.\n\nCheck it out and apply now!`
+//                 });
+//                 await new Promise(resolve => setTimeout(resolve, 300));
+//             } catch (emailError) {
+//                 console.error(`Failed to send to ${user.email}:`, emailError.message);
+//             }
+//         }
+
+//         return res.status(201).json({
+//             message: "New job created successfully and emails sent.",
+//             job,
+//             success: true
+//         });
+
+//     } catch (error) {
+//         console.log("Post job error:", error);
+//         return res.status(500).json({
+//             message: "Something went wrong.",
+//             success: false
+//         });
+//     }
+// };
 
 // student k liye
 export const getAllJobs = async (req, res) => {

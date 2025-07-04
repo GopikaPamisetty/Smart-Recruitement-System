@@ -1,18 +1,26 @@
 import express from "express";
 import isAuthenticated from "../middlewares/isAuthenticated.js";
-import { getAdminJobs, getAllJobs, getJobById, postJob, updateJob, deleteJob  } from "../controllers/jobController.js";
-//import { } from "../controllers/adminController.js"
+import { checkBlockedUser } from "../middlewares/checkBlockedUser.js"; // ✅ Import middleware
+
+import {
+  getAdminJobs,
+  getAllJobs,
+  getJobById,
+  postJob,
+  updateJob,
+  deleteJob
+} from "../controllers/jobController.js";
 
 const router = express.Router();
 
-router.route("/post").post(isAuthenticated, postJob);
+// ✅ Protect these routes with both middlewares
+router.route("/post").post(isAuthenticated, checkBlockedUser, postJob);
 router.route("/get").get(isAuthenticated, getAllJobs);
 router.route("/getadminjobs").get(isAuthenticated, getAdminJobs);
 router.route("/get/:id").get(isAuthenticated, getJobById);
-router.route("/update/:id").put(isAuthenticated,updateJob);  // 🔹 Add this line
-router.delete("/:id", deleteJob)
+router.route("/update/:id").put(isAuthenticated, checkBlockedUser, updateJob);
+
+// 🔸 Optional: Protect delete with authentication and block check
+router.delete("/:id", isAuthenticated, checkBlockedUser, deleteJob);
 
 export default router;
-
-
-

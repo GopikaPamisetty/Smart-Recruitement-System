@@ -1,9 +1,27 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+import { toast } from "sonner";
+import { useSelector } from "react-redux";
+
 const MockInterview = () => {
-  const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useSelector((store) => store.auth);
+
+  useEffect(() => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
+    if (user?.isBlocked) {
+      toast.error("Your account is blocked. You cannot access the mock interview.");
+      navigate("/account-blocked");
+    }
+  }, [user, navigate]);
+  
+  const location = useLocation();
+ 
   const { state } = location;
   const { role, experience } = state || {};
 
@@ -74,6 +92,13 @@ const MockInterview = () => {
       reader.readAsDataURL(blob);
     });
   };
+  useEffect(() => {
+    const userInfo = JSON.parse(localStorage.getItem("userInfo")); // adjust key if different
+  
+    if (userInfo?.isBlocked) {
+      navigate("/account-blocked");
+    }
+  }, []);
   
   useEffect(() => {
     const checkSupport = async () => {
@@ -295,6 +320,11 @@ const MockInterview = () => {
         }
         
         setQuestions(receivedQuestions);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Failed to fetch questions");
+        }
+        
       } catch (err) {
         console.error("Error fetching questions:", err);
         setError(err.message || "Failed to load questions. Please try again.");

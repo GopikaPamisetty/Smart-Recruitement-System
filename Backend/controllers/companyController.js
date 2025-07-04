@@ -1,9 +1,121 @@
 import { Company } from "../models/companyModel.js";
 import getDataUri from "../utils/datauri.js";
 import cloudinary from "../utils/cloudinary.js";
+// export const registerCompany = async (req, res) => {
+//     try {
+//         const { companyName } = req.body;
+//         if (!companyName) {
+//             return res.status(400).json({
+//                 message: "Company name is required.",
+//                 success: false
+//             });
+//         }
+
+//         let company = await Company.findOne({ name: companyName });
+
+//         if (company && !company.isDeleted) {
+//             return res.status(400).json({
+//                 message: "You can't register same company.",
+//                 success: false
+//             });
+//         }
+
+//         if (company && company.isDeleted) {
+//             company.isDeleted = false;
+//             company.userId = req.id;
+//             await company.save();
+
+//             return res.status(200).json({
+//                 message: "Company restored successfully.",
+//                 company,
+//                 success: true
+//             });
+//         }
+
+//         company = await Company.create({
+//             name: companyName,
+//             userId: req.id
+//         });
+
+//         return res.status(201).json({
+//             message: "Company registered successfully.",
+//             company,
+//             success: true
+//         });
+//     } catch (error) {
+//         console.log(error);
+//         res.status(500).json({ message: "Internal server error", success: false });
+//     }
+// };
+import { User } from "../models/userModel.js"; // ✅ import User model
+
+// export const registerCompany = async (req, res) => {
+//     try {
+//         const { companyName } = req.body;
+
+//         if (!companyName) {
+//             return res.status(400).json({
+//                 message: "Company name is required.",
+//                 success: false
+//             });
+//         }
+
+//         // ✅ Check recruiter approval
+//         const user = await User.findById(req.id);
+//         if (!user || user.role !== "recruiter") {
+//             return res.status(403).json({
+//                 message: "Only recruiters can register companies.",
+//                 success: false
+//             });
+//         }
+
+//         if (!user.profile?.isApproved) {
+//             return res.status(403).json({
+//                 message: "Your account is not approved yet. Please wait for admin approval.",
+//                 success: false
+//             });
+//         }
+
+//         let company = await Company.findOne({ name: companyName });
+
+//         if (company && !company.isDeleted) {
+//             return res.status(400).json({
+//                 message: "You can't register the same company again.",
+//                 success: false
+//             });
+//         }
+
+//         if (company && company.isDeleted) {
+//             company.isDeleted = false;
+//             company.userId = req.id;
+//             await company.save();
+
+//             return res.status(200).json({
+//                 message: "Company restored successfully.",
+//                 company,
+//                 success: true
+//             });
+//         }
+
+//         company = await Company.create({
+//             name: companyName,
+//             userId: req.id
+//         });
+
+//         return res.status(201).json({
+//             message: "Company registered successfully.",
+//             company,
+//             success: true
+//         });
+//     } catch (error) {
+//         console.log(error);
+//         res.status(500).json({ message: "Internal server error", success: false });
+//     }
+// };
 export const registerCompany = async (req, res) => {
     try {
         const { companyName } = req.body;
+
         if (!companyName) {
             return res.status(400).json({
                 message: "Company name is required.",
@@ -11,28 +123,48 @@ export const registerCompany = async (req, res) => {
             });
         }
 
-        let company = await Company.findOne({ name: companyName });
+        const user = await User.findById(req.id);
 
-        if (company && !company.isDeleted) {
-            return res.status(400).json({
-                message: "You can't register same company.",
+        if (!user || user.role !== "recruiter") {
+            return res.status(403).json({
+                message: "Only recruiters can register companies.",
                 success: false
             });
         }
 
-        if (company && company.isDeleted) {
-            company.isDeleted = false;
-            company.userId = req.id;
-            await company.save();
-
-            return res.status(200).json({
-                message: "Company restored successfully.",
-                company,
-                success: true
+        if (user.isBlocked) {
+            return res.status(403).json({
+                message: "You are blocked by admin. Cannot register a company.",
+                success: false
             });
         }
 
-        company = await Company.create({
+        if (!user.profile?.isApproved) {
+            return res.status(403).json({
+                message: "Your account is not approved yet. Please wait for admin approval.",
+                success: false
+            });
+        }
+
+        // ✅ NEW: Check if recruiter already created a company
+        const existingCompany = await Company.findOne({ userId: req.id, isDeleted: false });
+        if (existingCompany) {
+            return res.status(400).json({
+                message: "You have already registered a company.",
+                success: false
+            });
+        }
+
+        // ✅ Optional: Also prevent duplicate names globally
+        const companyWithSameName = await Company.findOne({ name: companyName });
+        if (companyWithSameName && !companyWithSameName.isDeleted) {
+            return res.status(400).json({
+                message: "A company with this name already exists.",
+                success: false
+            });
+        }
+
+        const company = await Company.create({
             name: companyName,
             userId: req.id
         });
@@ -42,6 +174,7 @@ export const registerCompany = async (req, res) => {
             company,
             success: true
         });
+
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Internal server error", success: false });

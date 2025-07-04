@@ -25,12 +25,20 @@ const SavedJobs = () => {
         });
         setSavedJobs(res.data.savedJobs);
       } catch (error) {
-        toast.error("Failed to load saved jobs");
-        console.error("Error fetching saved jobs:", error);
+        if (
+          error.response?.status === 403 &&
+          error.response?.data?.message?.includes("blocked")
+        ) {
+          toast.error("Your account is blocked. You cannot access saved jobs.");
+          navigate("/account-blocked"); // optional route to show blocked notice
+        } else {
+          toast.error("Failed to load saved jobs");
+          console.error("Error fetching saved jobs:", error);
+        }
       }
     };
 
-    fetchSavedJobs();
+    fetchSavedJobs(); // ✅ Don't forget to call the function
   }, [user, navigate]);
 
   return (

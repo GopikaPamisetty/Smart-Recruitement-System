@@ -6,7 +6,6 @@ import { Button } from './ui/button';
 import { Contact, Mail, Pen, Trash } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { Label } from './ui/label';
-//import UpdateProfileDialog from './UpdateProfileDialog';
 import useGetAppliedJobs from '@/hooks/useGetAppliedJobs';
 import { APPLICATION_API_END_POINT } from '@/utils/constant';
 import axios from 'axios';
@@ -23,6 +22,7 @@ const Profile = () => {
     const { loading, error } = useGetAppliedJobs();
 
     const isRecruiter = user?.role === 'recruiter';
+    const isSuperAdmin = user?.role === 'admin';
 
     const deleteAppliedJob = async (applicationId) => {
         try {
@@ -39,11 +39,9 @@ const Profile = () => {
             toast.error(err?.response?.data?.message || "Error deleting job");
         }
     };
-    
 
-    // ✅ Profile completion logic
     const calculateProfileCompletion = () => {
-        if (!user || user.role === 'recruiter') return 100;
+        if (!user || isRecruiter || isSuperAdmin) return 100;
 
         const { bio, resume, skills, profilePhoto } = user?.profile || {};
         let fieldsFilled = 0;
@@ -76,7 +74,7 @@ const Profile = () => {
                 </div>
 
                 {/* 🎯 Profile completion meter */}
-                {!isRecruiter && (
+                {!isRecruiter && !isSuperAdmin && (
                     <div className='mt-5'>
                         <h2 className='mb-1 font-medium'>Profile Completion: {profileCompletion}%</h2>
                         <Progress value={profileCompletion} />
@@ -94,7 +92,8 @@ const Profile = () => {
                     </div>
                 </div>
 
-                {!isRecruiter && (
+                {/* For Student only: skills and resume */}
+                {!isRecruiter && !isSuperAdmin && (
                     <>
                         <div className='my-5'>
                             <h1>Skills</h1>
@@ -118,7 +117,8 @@ const Profile = () => {
                 )}
             </div>
 
-            {!isRecruiter && (
+            {/* Applied jobs section only for students */}
+            {!isRecruiter && !isSuperAdmin && (
                 <div className='max-w-4xl mx-auto bg-white rounded-2xl'>
                     <h1 className='font-bold text-lg my-5'>Applied Jobs</h1>
 
@@ -157,7 +157,6 @@ const Profile = () => {
                                                     <span className="text-gray-500">—</span>
                                                 )}
                                             </td>
-
                                         </tr>
                                     ))}
                                 </tbody>

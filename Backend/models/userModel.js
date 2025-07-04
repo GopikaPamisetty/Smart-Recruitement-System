@@ -20,10 +20,14 @@ const userSchema = new mongoose.Schema({
     },
     role:{
         type:String,
-        enum:['student','recruiter'],
+        enum:['student','recruiter','admin'],
         required:true
     },
-    
+    isBlocked: {
+        type: Boolean,
+        default: false
+    },
+     
     profile:{
         bio:{type:String},
         skills:[{type:String}],
@@ -33,14 +37,18 @@ const userSchema = new mongoose.Schema({
         profilePhoto:{
             type:String,
             default:""
+        },
+        isApproved: {
+            type: Boolean,
+            default: false
         }
     },
     savedJobs: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "Job"
       }]
-    }, { timestamps: true });
+    },   
+    { timestamps: true });
     
 
 export const User = mongoose.model('User', userSchema);
-
