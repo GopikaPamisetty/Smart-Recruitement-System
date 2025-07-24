@@ -1,6 +1,6 @@
 # Smart Recruitment System
 
-A smart recruitment system built using the **MERN stack (MongoDB, Express.js, React.js, Node.js)** with PostgreSQL (or MongoDB) as the database. This platform is designed to streamline the recruitment process by connecting **job seekers**, **recruiters**, and **admins** in a centralized and efficient system.
+A smart recruitment system built using the **MERN stack (MongoDB, Express.js, React.js, Node.js)** . This platform is designed to streamline the recruitment process by connecting **job seekers**, **recruiters**, and **admins** in a centralized and efficient system.
 
 ---
 
@@ -21,7 +21,7 @@ A smart recruitment system built using the **MERN stack (MongoDB, Express.js, Re
 ### 🛡️ Super Admin
 - Approve or disapprove recruiter accounts
 - Manage all users (job seekers and recruiters)
-- Monitor job postings and applications
+- Monitor job postings and companies
 - Block or unblock accounts
 - Platform analytics (user counts, job trends, etc.)
 
@@ -31,7 +31,7 @@ A smart recruitment system built using the **MERN stack (MongoDB, Express.js, Re
 
 | Frontend        | Backend           | Database         | Others                  |
 |----------------|-------------------|------------------|--------------------------|
-| React.js        | Node.js, Express  | PostgreSQL / MongoDB | JWT, Redux, Tailwind CSS, Lucide Icons, Framer Motion |
+| React.js        | Node.js, Express  | PostgreSQL / MongoDB | JWT, Redux, Tailwind CSS, Framer Motion |
 
 ---
 
