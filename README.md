@@ -31,7 +31,7 @@ A smart recruitment system built using the **MERN stack (MongoDB, Express.js, Re
 
 | Frontend        | Backend           | Database         | Others                  |
 |----------------|-------------------|------------------|--------------------------|
-| React.js        | Node.js, Express  | PostgreSQL / MongoDB | JWT, Redux, Tailwind CSS, Framer Motion |
+| React.js        | Node.js, Express  | MongoDB | JWT, Redux, Tailwind CSS, Framer Motion |
 
 ---
 
